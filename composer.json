@@ -1,0 +1,23 @@
+{
+    "name": "1024/silex-jwt",
+    "description": "JWT Authentication Provider, Listener and ServieProvider for the Silex micro-framework",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Raison",
+            "email": "david@tentwentyfour.lu"
+        },
+        {
+            "name": "Paul Salentiny",
+            "email": "paul@tentwentyfour.lu"
+        }
+    ],
+    "require": {
+	   "firebase/php-jwt": "~2.0"
+    },
+    "autoload": {
+	   "psr-4": {
+		  "1024\\": "src/"
+        }
+    }
+}
