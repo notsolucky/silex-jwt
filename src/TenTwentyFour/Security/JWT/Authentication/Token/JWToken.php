@@ -1,6 +1,6 @@
 <?php
 
-namespace TenTwentyFour\Authentication\Token;
+namespace TenTwentyFour\Security\JWT\Authentication\Token;
 
 use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;

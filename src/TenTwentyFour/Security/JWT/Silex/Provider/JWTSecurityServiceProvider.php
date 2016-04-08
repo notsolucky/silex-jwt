@@ -4,14 +4,14 @@
  * @author Paul Salentiny <paul@tentwentyfour.lu>
  */
 
-namespace TenTwentyFour\Service\Provider;
+namespace TenTwentyFour\Security\JWT\Silex\Provider;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 
-use TenTwentyFour\Firewall\JWTListener;
-use TenTwentyFour\Authentication\Provider\JWTProvider;
-use TenTwentyFour\EntryPoint\JWTAuthenticationEntryPoint;
+use TenTwentyFour\Security\JWT\Firewall\JWTListener;
+use TenTwentyFour\Security\JWT\Authentication\Provider\JWTProvider;
+use TenTwentyFour\Security\JWT\EntryPoint\JWTAuthenticationEntryPoint;
 
 class JWTSecurityServiceProvider implements ServiceProviderInterface
 {

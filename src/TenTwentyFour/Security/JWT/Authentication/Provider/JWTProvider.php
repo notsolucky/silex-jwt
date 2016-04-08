@@ -1,6 +1,6 @@
 <?php
 
-namespace TenTwentyFour\Component\Security\Http\Authentication\Provider;
+namespace TenTwentyFour\Security\JWT\Authentication\Provider;
 
 use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;

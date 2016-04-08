@@ -4,7 +4,7 @@
  * @author Paul Salentiny <paul@tentwentyfour.lu>
  */
 
-namespace TenTwentyFour\Firewall;
+namespace TenTwentyFour\Security\JWT\Firewall;
 
 use Silex\Application;
 use Symfony\Component\HttpFoundation\Response;

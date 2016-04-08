@@ -1,6 +1,6 @@
 <?php
 
-namespace TenTwentyFour\Component\Security\Http\EntryPoint;
+namespace TenTwentyFour\Security\JWT\EntryPoint;
 
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
