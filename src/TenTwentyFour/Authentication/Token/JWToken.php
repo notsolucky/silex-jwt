@@ -1,15 +1,13 @@
 <?php
 
-namespace TenTwentyFour\Component\Security\Http\Authentication\Token;
+namespace TenTwentyFour\Authentication\Token;
 
+use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
-use Silex\Application;
-
 class JWToken extends AbstractToken implements TokenInterface
 {
-
     protected $app;
     protected $payload;
     protected $hash;
@@ -19,22 +17,14 @@ class JWToken extends AbstractToken implements TokenInterface
         $this->app = $app;
     }
 
-    public function setPayload(array $payload)
+    public function setEncodedPayload(array $payload)
     {
         $this->payload = $payload;
     }
 
-    public function getPayload()
+    public function getEncodedPayload()
     {
         return $this->payload;
-    }
-
-    public function setHash($hash) {
-        $this->hash = $hash;
-    }
-
-    public function getHash() {
-        return $this->hash;
     }
 
     public function getCredentials()

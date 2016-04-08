@@ -1,13 +1,17 @@
 <?php
+/**
+ * @package 1024/silex-jwt
+ * @author Paul Salentiny <paul@tentwentyfour.lu>
+ */
 
 namespace TenTwentyFour\Service\Provider;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 
-use TenTwentyFour\Component\Security\Http\Firewall\JWTListener;
-use TenTwentyFour\Component\Security\Http\Authentication\Provider\JWTProvider;
-use TenTwentyFour\Component\Security\Http\EntryPoint\JWTAuthenticationEntryPoint;
+use TenTwentyFour\Firewall\JWTListener;
+use TenTwentyFour\Authentication\Provider\JWTProvider;
+use TenTwentyFour\EntryPoint\JWTAuthenticationEntryPoint;
 
 class JWTSecurityServiceProvider implements ServiceProviderInterface
 {
@@ -15,15 +19,18 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
     {
         $app['security.authentication_listener.factory.jwt'] = $app->protect(function ($name, $options) use ($app) {
 
-            // define the authentication provider object
             $app['security.authentication_provider.'.$name.'.jwt'] = $app->share(function () use ($app) {
-                return new JWTProvider($app);
+                return new JWTProvider(
+                    $app['security.user_provider.default'],
+                    __DIR__.'/security_cache'
+                );
             });
 
-            // define the authentication listener object
             $app['security.authentication_listener.'.$name.'.jwt'] = $app->share(function () use ($app) {
-                // use 'security' instead of 'security.token_storage' on Symfony <2.6
-                return new JWTListener($app);
+                return new JWTListener(
+                    $app['security'],
+                    $app['security.authentication_manager']
+                );
             });
 
             $app['security.entry_point.'.$name.'.jwt'] = $app->share(function() use ($app) {
@@ -31,13 +38,9 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
             });
 
             return array(
-                // the authentication provider id
                 'security.authentication_provider.'.$name.'.jwt',
-                // the authentication listener id
                 'security.authentication_listener.'.$name.'.jwt',
-                // the entry point id
                 'security.entry_point.'.$name.'.jwt',
-                // the position of the listener in the stack
                 'pre_auth'
             );
         });

@@ -1,17 +1,19 @@
 <?php
+/**
+ * @package 1024/silex-jwt
+ * @author Paul Salentiny <paul@tentwentyfour.lu>
+ */
 
-namespace TenTwentyFour\Component\Security\Http\Firewall;
+namespace TenTwentyFour\Firewall;
 
+use Silex\Application;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Firewall\ListenerInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpFoundation\Request;
 
-use Silex\Application;
-
-use TenTwentyFour\Component\Security\Http\Authentication\Token\JWToken;
-
 use Firebase\JWT\JWT;
+use TenTwentyFour\Authentication\Token\JWToken;
 
 class JWTListener implements ListenerInterface
 {
@@ -19,22 +21,21 @@ class JWTListener implements ListenerInterface
     protected $tokenStorage;
     protected $authenticationManager;
 
-    public function __construct(Application $app)
+    public function __construct($security, $authenticationManager)
     {
-            $this->app = $app;
-            // get security context instance (Symfony\Component\Security\Core\SecurityContext)
-            // for Silex > 2.6, use 'security.token_storage'
-            $this->tokenStorage = $app['security'];
-            $this->authenticationManager = $app['security.authentication_manager'];
+        $this->app = $app;
+        $this->tokenStorage = $security;
+        $this->authenticationManager = $authenticationManager;
     }
 
-    public function handle(GetResponseEvent $event) {
+    public function handle(GetResponseEvent $event)
+    {
         $request = $event->getRequest();
         $response = new Response();
-        // initialize token
         $token = new JWToken($this->app);
+
         if ($request->query->has('jwt')) {
-            $token->setHash($request->query->get('jwt'));
+            $token->setPayload($request->query->get('jwt'));
             try {
                 $authenticatedToken = $this->authenticationManager->authenticate($token);
                 $this->tokenStorage->setToken($authenticatedToken);
