@@ -38,6 +38,11 @@ class JWToken extends AbstractToken implements TokenInterface
         );
     }
 
+    /**
+     * Throws an exception if decoding fails.
+     * Exceptions are could in JWTProvider
+     * @return JWToken
+     */
     public function decode()
     {
         $this->payload = (array) JWT::decode(
@@ -45,6 +50,7 @@ class JWToken extends AbstractToken implements TokenInterface
             $this->key,
             [$this->alg]
         );
+        return $this;
     }
 
     public function setPayload(array $payload)
