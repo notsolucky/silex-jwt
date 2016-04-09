@@ -19,9 +19,7 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
 {
     public function register(Application $app)
     {
-        $app['jwt.options'] = [];
-
-        $app['jwt'] = $app->share(function ($app) {
+        $app['jwt.token'] = $app->protect(function () use ($app) {
             $app['jwt.options'] = array_replace(
                 [
                     'key' => 'aRandomKeyThatShouldBeOverridenInTheConfigFile',
@@ -29,9 +27,6 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
                 ],
                 $app['jwt.options']
             );
-        });
-
-        $app['jwt.token'] = $app->share(function ($app) {
             return new JWToken(
                 [],
                 $app['jwt.options']['key'],
@@ -42,17 +37,14 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
         $app['security.authentication_listener.factory.jwt'] = $app->protect(function ($name, $options) use ($app) {
 
             $app['security.authentication_provider.'.$name.'.jwt'] = $app->share(function () use ($app) {
-                return new JWTProvider(
-                    $app['security.user_provider.default'],
-                    $app['jwt.options']['key'],
-                    $app['jwt.options']['alg']
-                );
+                return new JWTProvider($app['jwt.token']);
             });
 
             $app['security.authentication_listener.'.$name.'.jwt'] = $app->share(function () use ($app) {
                 return new JWTListener(
                     $app['security'],
-                    $app['security.authentication_manager']
+                    $app['security.authentication_manager'],
+                    $app['jwt.token']()
                 );
             });
 

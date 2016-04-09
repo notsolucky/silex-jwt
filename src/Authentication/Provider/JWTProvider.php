@@ -1,10 +1,13 @@
 <?php
+/**
+ * @package 1024/silex-jwt
+ * @author Paul Salentiny <paul@tentwentyfour.lu>
+ * @author David Raison <david@tentwentyfour.lu>
+ */
 
 namespace TenTwentyFour\Security\JWT\Authentication\Provider;
 
-use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -12,17 +15,15 @@ use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\ExpiredException;
 
-use TenTwentyFour\Authentication\Token\JWToken;
+use TenTwentyFour\Security\JWT\Authentication\Token\JWToken;
 
 class JWTProvider implements AuthenticationProviderInterface
 {
-    protected $app;
+    protected $tokenFactory;
 
-    public function __construct(UserProviderInterface $userprovider, $key, $alg)
+    public function __construct(\Closure $tokenFactory)
     {
-        $this->userProvider = $userprovider;
-        $this->key = $key;
-        $this->alg = $alg;
+        $this->tokenFactory = $tokenFactory;
     }
 
     /**
@@ -37,7 +38,8 @@ class JWTProvider implements AuthenticationProviderInterface
     {
         try {
             $token->decode();
-            $authToken = new JWToken($this->app);   // I would rather pass in key and algorithm?
+            $authToken = $this->tokenFactory->__invoke();
+            $authToken->setPayload($token->getPayload());
             $authToken->setAuthenticated(true);
             return $authToken;
         } catch (SignatureInvalidException $e) {

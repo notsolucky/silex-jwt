@@ -25,8 +25,9 @@ class JWToken extends AbstractToken implements TokenInterface
     }
 
     /**
+     * Generates an encoded JWT token based on the parameters passed in
      *
-     * @return [type] [description]
+     * @return String Encoded JWT
      */
     public function generate($params)
     {
@@ -42,11 +43,21 @@ class JWToken extends AbstractToken implements TokenInterface
         $this->payload = (array) JWT::decode(
             $this->encodedPayload,
             $this->key,
-            $this->alg
+            [$this->alg]
         );
     }
 
-    public function setEncodedPayload(array $payload)
+    public function setPayload(array $payload)
+    {
+        $this->payload = $payload;
+    }
+
+    public function getPayload()
+    {
+        return $this->payload;
+    }
+
+    public function setEncodedPayload($payload)
     {
         $this->encodedPayload = $payload;
     }
@@ -60,5 +71,4 @@ class JWToken extends AbstractToken implements TokenInterface
     {
         return [];
     }
-
 }
