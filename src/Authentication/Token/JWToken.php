@@ -1,22 +1,27 @@
 <?php
+/**
+ * @package 1024/silex-jwt
+ * @author Paul Salentiny <paul@tentwentyfour.lu>
+ * @author David Raison <david@tentwentyfour.lu>
+ */
 
 namespace TenTwentyFour\Security\JWT\Authentication\Token;
 
-use Silex\Application;
 use Firebase\JWT\JWT;
 use Symfony\Component\Security\Core\Authentication\Token\AbstractToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class JWToken extends AbstractToken implements TokenInterface
 {
-    protected $app;
     protected $payload;
     protected $encodedPayload;
     protected $hash;
 
-    public function __construct(array $roles = array())
+    public function __construct(array $roles = array(), $key, $alg)
     {
         parent::__construct($roles);
+        $this->key = $key;
+        $this->alg = $alg;
     }
 
     /**
@@ -27,8 +32,8 @@ class JWToken extends AbstractToken implements TokenInterface
     {
         return JWT::encode(
             $params,
-            $this->app['jwt.options']['key'],
-            $this->app['jwt.options']['alg']
+            $this->key,
+            $this->alg
         );
     }
 
@@ -36,8 +41,8 @@ class JWToken extends AbstractToken implements TokenInterface
     {
         $this->payload = (array) JWT::decode(
             $this->encodedPayload,
-            $this->app['jwt.options']['key'],
-            $this->app['jwt.options']['alg']
+            $this->key,
+            $this->alg
         );
     }
 

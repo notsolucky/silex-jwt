@@ -2,6 +2,7 @@
 /**
  * @package 1024/silex-jwt
  * @author Paul Salentiny <paul@tentwentyfour.lu>
+ * @author David Raison <david@tentwentyfour.lu>
  */
 
 namespace TenTwentyFour\Security\JWT\Silex\Provider;
@@ -18,20 +19,32 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
 {
     public function register(Application $app)
     {
-        //HMAC SHA256
-        // var_dump($app['jwt.options']); exit;
+        $app['jwt.options'] = [];
 
-        $app['jwt.token'] = $app->share(function () use ($app) {
-            return new JWToken();
+        $app['jwt'] = $app->share(function ($app) {
+            $app['jwt.options'] = array_replace(
+                [
+                    'key' => 'aRandomKeyThatShouldBeOverridenInTheConfigFile',
+                    'alg' => 'HS256'    // HMAC SHA-256
+                ],
+                $app['jwt.options']
+            );
         });
 
-        $app['jwt.options'] = [];   // does this override our options? If so how does this work in TwigServiceProvider?
+        $app['jwt.token'] = $app->share(function ($app) {
+            return new JWToken(
+                [],
+                $app['jwt.options']['key'],
+                $app['jwt.options']['alg']
+            );
+        });
+
         $app['security.authentication_listener.factory.jwt'] = $app->protect(function ($name, $options) use ($app) {
 
             $app['security.authentication_provider.'.$name.'.jwt'] = $app->share(function () use ($app) {
                 return new JWTProvider(
-                    $app['security.user_provider.default'], // Class expects instance of Silex Application
-                    $app['jwt.options']['key'], // I think we should rather set something like 'security.authentication_provider.config.jwt' and use those from here on out? (cf. other Service Providers, for instance twig…?!)
+                    $app['security.user_provider.default'],
+                    $app['jwt.options']['key'],
                     $app['jwt.options']['alg']
                 );
             });
