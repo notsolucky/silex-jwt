@@ -4,10 +4,10 @@ namespace TenTwentyFour\Security\JWT\Authentication\Provider;
 
 use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
-use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\ExpiredException;
@@ -18,20 +18,26 @@ class JWTProvider implements AuthenticationProviderInterface
 {
     protected $app;
 
-    public function __construct(Application $app)
+    public function __construct(UserProviderInterface $userprovider, $key, $alg)
     {
-        $this->app = $app;
+        $this->userProvider = $userprovider;
+        $this->key = $key;
+        $this->alg = $alg;
     }
 
+    /**
+     * JWToken throws exceptions if unable to decode the token.
+     * We catch these exceptions and turn them into AuthenticationExceptions
+     *
+     * @param  TokenInterface $token Token retrieved by the JWTListener
+     *
+     * @return JWToken  Returns a new instance of the JWToken if authentication succeeded.
+     */
     public function authenticate(TokenInterface $token)
     {
         try {
-            $decoded = (array) JWT::decode(
-                $token->getEncodedPayload(),
-                $this->app['jwt.options']['key'],
-                array('HS256')
-            );
-            $authToken = new JWToken();
+            $token->decode();
+            $authToken = new JWToken($this->app);   // I would rather pass in key and algorithm?
             $authToken->setAuthenticated(true);
             return $authToken;
         } catch (SignatureInvalidException $e) {
