@@ -2,6 +2,7 @@
 /**
  * @package 1024/silex-jwt
  * @author Paul Salentiny <paul@tentwentyfour.lu>
+ * @author David Raison <david@tentwentyfour.lu>
  */
 
 namespace TenTwentyFour\Security\JWT\Silex\Provider;
@@ -11,25 +12,39 @@ use Silex\ServiceProviderInterface;
 
 use TenTwentyFour\Security\JWT\Firewall\JWTListener;
 use TenTwentyFour\Security\JWT\Authentication\Provider\JWTProvider;
+use TenTwentyFour\Security\JWT\Authentication\Token\JWToken;
 use TenTwentyFour\Security\JWT\EntryPoint\JWTAuthenticationEntryPoint;
 
 class JWTSecurityServiceProvider implements ServiceProviderInterface
 {
     public function register(Application $app)
     {
+        $app['jwt.token'] = $app->protect(function () use ($app) {
+            $app['jwt.options'] = array_replace(
+                [
+                    'key' => 'aRandomKeyThatShouldBeOverridenInTheConfigFile',
+                    'alg' => 'HS256'    // HMAC SHA-256
+                ],
+                $app['jwt.options']
+            );
+            return new JWToken(
+                [],
+                $app['jwt.options']['key'],
+                $app['jwt.options']['alg']
+            );
+        });
+
         $app['security.authentication_listener.factory.jwt'] = $app->protect(function ($name, $options) use ($app) {
 
             $app['security.authentication_provider.'.$name.'.jwt'] = $app->share(function () use ($app) {
-                return new JWTProvider(
-                    $app['security.user_provider.default'],
-                    __DIR__.'/security_cache'
-                );
+                return new JWTProvider($app['jwt.token']);
             });
 
             $app['security.authentication_listener.'.$name.'.jwt'] = $app->share(function () use ($app) {
                 return new JWTListener(
                     $app['security'],
-                    $app['security.authentication_manager']
+                    $app['security.authentication_manager'],
+                    $app['jwt.token']()
                 );
             });
 

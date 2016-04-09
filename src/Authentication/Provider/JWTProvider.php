@@ -1,37 +1,45 @@
 <?php
+/**
+ * @package 1024/silex-jwt
+ * @author Paul Salentiny <paul@tentwentyfour.lu>
+ * @author David Raison <david@tentwentyfour.lu>
+ */
 
 namespace TenTwentyFour\Security\JWT\Authentication\Provider;
 
-use Silex\Application;
 use Symfony\Component\Security\Core\Authentication\Provider\AuthenticationProviderInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
-use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
 use Firebase\JWT\ExpiredException;
 
-use TenTwentyFour\Authentication\Token\JWToken;
+use TenTwentyFour\Security\JWT\Authentication\Token\JWToken;
 
 class JWTProvider implements AuthenticationProviderInterface
 {
-    protected $app;
+    protected $tokenFactory;
 
-    public function __construct(Application $app)
+    public function __construct(\Closure $tokenFactory)
     {
-        $this->app = $app;
+        $this->tokenFactory = $tokenFactory;
     }
 
+    /**
+     * JWToken throws exceptions if unable to decode the token.
+     * We catch these exceptions and turn them into AuthenticationExceptions
+     *
+     * @param  TokenInterface $token Token retrieved by the JWTListener
+     *
+     * @return JWToken  Returns a new instance of the JWToken if authentication succeeded.
+     */
     public function authenticate(TokenInterface $token)
     {
         try {
-            $decoded = (array) JWT::decode(
-                $token->getEncodedPayload(),
-                $this->app['jwt.options']['key'],
-                array('HS256')
-            );
-            $authToken = new JWToken();
+            $token->decode();
+            $authToken = $this->tokenFactory->__invoke();
+            $authToken->setPayload($token->getPayload());
             $authToken->setAuthenticated(true);
             return $authToken;
         } catch (SignatureInvalidException $e) {
