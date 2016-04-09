@@ -1,7 +1,8 @@
 {
     "name": "1024/silex-jwt",
-    "description": "JWT Authentication Provider, Listener and ServieProvider for the Silex micro-framework",
+    "description": "JWT Authentication Provider, Listener and ServiceProvider for the Silex micro-framework",
     "license": "MIT",
+    "keywords": ["silex"],
     "authors": [
         {
             "name": "David Raison",
@@ -22,5 +23,6 @@
 	   "psr-4": {
 		  "TenTwentyFour\\Security\\JWT\\": "src/"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
