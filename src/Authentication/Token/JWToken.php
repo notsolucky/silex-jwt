@@ -13,15 +13,16 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 class JWToken extends AbstractToken implements TokenInterface
 {
+    protected $options;
     protected $payload;
     protected $encodedPayload;
-    protected $hash;
+    protected $credentials;
 
-    public function __construct(array $roles = array(), $key, $alg)
+    public function __construct(array $roles = array(), array $options)
     {
         parent::__construct($roles);
-        $this->key = $key;
-        $this->alg = $alg;
+        $this->options = $options;
+        $this->credentials = [];
     }
 
     /**
@@ -33,8 +34,8 @@ class JWToken extends AbstractToken implements TokenInterface
     {
         return JWT::encode(
             $params,
-            $this->key,
-            $this->alg
+            $this->options['key'],
+            $this->options['alg']
         );
     }
 
@@ -47,9 +48,12 @@ class JWToken extends AbstractToken implements TokenInterface
     {
         $this->payload = (array) JWT::decode(
             $this->encodedPayload,
-            $this->key,
-            [$this->alg]
+            $this->options['key'],
+            [$this->options['alg']]
         );
+        $this->loadAttributes();
+        $this->loadUser();
+        $this->loadCredentials();
         return $this;
     }
 
@@ -75,6 +79,49 @@ class JWToken extends AbstractToken implements TokenInterface
 
     public function getCredentials()
     {
-        return [];
+        return $this->credentials;
+    }
+
+    protected function loadAttributes()
+    {
+        if (isset($this->options['att'])
+            && is_array($this->options['att'])) {
+
+            $this->setAttributes($this->loadClaims($this->options['att']));
+        }
+    }
+
+    protected function loadUser()
+    {
+        if (isset($this->options['usr'])
+            && isset($this->payload[$this->options['usr']])) {
+
+            $this->setUser($this->payload[$this->options['usr']]);
+        }
+    }
+
+    protected function loadCredentials()
+    {
+        if (isset($this->options['crd'])
+            && is_array($this->options['crd'])) {
+
+            $this->credentials = $this->loadClaims($this->options['crd']);
+        }
+    }
+
+    private function loadClaims(array $data)
+    {
+        $loaded = [];
+
+        array_walk(
+            $this->payload,
+            function ($value, $key) use ($data, &$loaded) {
+                if (isset($data[$key])) {
+                    $loaded[$data[$key]] = $value;
+                }
+            }
+        );
+
+        return $loaded;
     }
 }

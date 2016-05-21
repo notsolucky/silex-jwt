@@ -29,15 +29,14 @@ class JWTSecurityServiceProvider implements ServiceProviderInterface
             );
             return new JWToken(
                 [],
-                $app['jwt.options']['key'],
-                $app['jwt.options']['alg']
+                $app['jwt.options']
             );
         });
 
         $app['security.authentication_listener.factory.jwt'] = $app->protect(function ($name, $options) use ($app) {
 
             $app['security.authentication_provider.'.$name.'.jwt'] = $app->share(function () use ($app) {
-                return new JWTProvider($app['jwt.token']);
+                return new JWTProvider();
             });
 
             $app['security.authentication_listener.'.$name.'.jwt'] = $app->share(function () use ($app) {

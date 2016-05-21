@@ -19,12 +19,6 @@ use TenTwentyFour\Security\JWT\Authentication\Token\JWToken;
 
 class JWTProvider implements AuthenticationProviderInterface
 {
-    protected $tokenFactory;
-
-    public function __construct(\Closure $tokenFactory)
-    {
-        $this->tokenFactory = $tokenFactory;
-    }
 
     /**
      * JWToken throws exceptions if unable to decode the token.
@@ -38,10 +32,8 @@ class JWTProvider implements AuthenticationProviderInterface
     {
         try {
             $token->decode();
-            $authToken = $this->tokenFactory->__invoke();
-            $authToken->setPayload($token->getPayload());
-            $authToken->setAuthenticated(true);
-            return $authToken;
+            $token->setAuthenticated(true);
+            return $token;
         } catch (SignatureInvalidException $e) {
             throw new AuthenticationException(
                 'Token signature is invalid.'
